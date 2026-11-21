@@ -249,3 +249,19 @@ func TestRequestsHaveBoundedConcurrency(t *testing.T) {
 	close(release)
 	wg.Wait()
 }
+
+func TestClientFormattingDoesNotExposeCredentials(t *testing.T) {
+	c, err := newClient(config())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, format := range []string{"%v", "%+v", "%s"} {
+		if got := fmt.Sprintf(format, c); got != "Zoom client (credentials redacted)" {
+			t.Fatal("client formatting did not redact credentials")
+		}
+	}
+	cacheError := fmt.Errorf("An error has occurred while setting value '%v' on key '%v'", c, "connection-key")
+	if cacheError.Error() != "An error has occurred while setting value 'Zoom client (credentials redacted)' on key 'connection-key'" {
+		t.Fatal("SDK cache error did not redact credentials")
+	}
+}

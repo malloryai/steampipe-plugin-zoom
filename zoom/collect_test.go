@@ -224,3 +224,18 @@ func TestRoomsIncludeUnassignedAndDeduplicateParents(t *testing.T) {
 		t.Fatal(childPaths)
 	}
 }
+
+func TestFutureUpperBoundAndTightestBounds(t *testing.T) {
+	now := instant("2026-06-02T12:00:00Z")
+	upper := now.Add(24 * time.Hour)
+	for _, bounds := range [][]timeBound{
+		{{operator: "<", value: upper}},
+		{{operator: "<", value: upper.Add(time.Hour)}, {operator: "<", value: upper}},
+		{{operator: "<", value: upper}, {operator: "<", value: upper.Add(time.Hour)}},
+	} {
+		start, end, err := timeBounds(now, bounds)
+		if err != nil || !end.Equal(upper) || !start.Equal(upper.Add(-30*24*time.Hour)) {
+			t.Fatalf("future upper bound: %v %v %v", start, end, err)
+		}
+	}
+}

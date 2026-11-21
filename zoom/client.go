@@ -27,6 +27,9 @@ type client struct {
 	requests                          chan struct{}
 }
 
+// The SDK cache formats rejected values in errors that it logs.
+func (*client) String() string { return "Zoom client (credentials redacted)" }
+
 func newClient(cfg zoomConfig) (*client, error) {
 	for _, value := range []*string{cfg.AccountID, cfg.ClientID, cfg.ClientSecret} {
 		if value == nil || strings.TrimSpace(*value) == "" {
